@@ -9,11 +9,41 @@ import Investor from "../models/investorModel.js";
 
 dotenv.config();
 
+export const getSpecificPartners=async(req,res)=>{
+   try {
+    const { id } = req.params;
+
+    const partner = await Partner.findById(id);
+
+    if (!partner) {
+      return res.status(404).json({
+        success: false,
+        message: "Partner not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Partner fetched successfully",
+      data: partner,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    });
+  }
+}
 
 export const getAllPartners=async(req,res)=>{
   try {
     const partners = await Partner.find({}).sort({ createdAt: -1 });
-    return res.json(partners);
+    return res.status(200).json({
+      success: true,
+      message: "All Partners fetched successfully",
+      data: partners,
+    });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Server error", error: err.message });
@@ -167,7 +197,7 @@ export const partnerLogin = async (req, res) => {
 
 export const getMyReferredInvestors = async (req, res) => {
   try {
-    const partnerId = req.partner.id; // JWT se aayega
+    const partnerId = req.partner.id; // JWT se aaya hua id   
 
     //  Get logged-in partner
     const partner = await Partner.findById(partnerId);
@@ -197,48 +227,7 @@ export const getMyReferredInvestors = async (req, res) => {
     });
   }
 };
-// import bcrypt from 'bcryptjs';
-// import Partner from '../models/partnerModel.js';
-
-// export const signup = async (req, res) => {
-//   const { name, email, phone, password, confirmPassword } = req.body;
-
-//   // Required fields
-//   if (!name || !email || !phone || !password || !confirmPassword) {
-//     return res.status(400).json({ message: "All fields required" });
-//   }
-
-//   // Email format
-//   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-//   if (!emailRegex.test(email)) {
-//     return res.status(400).json({ message: "Invalid email format" });
-//   }
-
-//   // Password match
-//   if (password !== confirmPassword) {
-//     return res.status(400).json({ message: "Passwords do not match" });
-//   }
-
-//   // Phone uniqueness
-//   const phoneExists = await Partner.findOne({ phone });
-//   if (phoneExists) {
-//     return res.status(400).json({ message: "Phone already registered" });
-//   }
-
-//   // Save temp user (OTP pending)
-//   await TempUser.create({
-//     name,
-//     email,
-//     phone,
-//     password: await bcrypt.hash(password, 10),
-//   });
-
-//   // Send OTP
-// //   await sendOtp(phone);
-
-//   res.json({ success: true, message: `OTP sent this number ${phone}` });
-// };
-
+ 
 // export const verifyOtp = async (req, res) => {
 //   const { phone, otp } = req.body;
 
@@ -296,46 +285,6 @@ export const getMyReferredInvestors = async (req, res) => {
 //     success: true,
 //     message: "Signup completed",
 //     userId: user._id,
-//   });
-// };
-
-
-// /* Get all partners */
-// export const getAllPartners = async (req, res) => {
-//   const partners = await Partner.find().populate("referredBy", "name phone");
-//   res.json({ success: true, data: partners });
-// };
-
-// /* Approve Partner */
-// export const approvePartner = async (req, res) => {
-//   const partner = await Partner.findById(req.params.id);
-
-//   if (!partner)
-//     return res.status(404).json({ message: "Partner not found" });
-
-//   partner.isApproved = true;
-//   partner.status = "ACTIVE";
-//   await partner.save();
-
-//   res.json({ success: true, message: "Partner approved" });
-// };
-
-// /* Assign Referral (Manual) */
-// export const assignReferral = async (req, res) => {
-//   const { userId, referredById } = req.body;
-
-//   const user = await Partner.findById(userId);
-//   const referrer = await Partner.findById(referredById);
-
-//   if (!user || !referrer)
-//     return res.status(404).json({ message: "User not found" });
-
-//   user.referredBy = referrer._id;
-//   await user.save();
-
-//   res.json({
-//     success: true,
-//     message: "Referral assigned successfully",
 //   });
 // };
 

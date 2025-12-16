@@ -6,7 +6,7 @@ const partnerSchema = new mongoose.Schema(
     email: { type: String ,required: true },
     phone: { type: String, unique: true, required: true },
     password: { type: String, required: true },
-
+    
     referralCode: { type: String, unique: true }, // own
     rmReferralUsed: { type: String, default: null }, // RM code used
 
