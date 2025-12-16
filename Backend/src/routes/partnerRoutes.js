@@ -1,39 +1,23 @@
-
+// src/routes/partnerRoutes.js
 import express from "express";
-import { getAllPartners, getMyReferredInvestors, getSpecificPartners, partnerLogin, partnerSignup } from "../controllers/partnerController.js";
+import { getAllPartners, getMyReferredInvestors, getSpecificPartners, partnerLogin, partnerSignup, updatePersonalInfo } from "../controllers/partnerController.js";
+import { verifyPartner } from "../middleware/partnerAuth.js";
+
+
 const router = express.Router();
 router.post("/signup", partnerSignup);
 router.post("/login", partnerLogin);
 
-
-
-router.get("/AllPartners",getAllPartners);
-
-
-
-router.get("/dashboard/investors",getMyReferredInvestors);
-
-router.get("/:id", getSpecificPartners);
-export default router;
-
-// import express from 'express';
-// import { acceptDeed, approvePartner, assignReferral, getAllPartners, signup, verifyOtp } from '../controllers/partnerController.js';
-// import { login } from '../controllers/adminController.js';
-
-// import { verifyAdmin } from '../middleware/admin.js';
-// const router = express.Router();
-
-// router.post('/signup', signup);
-
 // router.post('/verify-otp', verifyOtp);
 
-// router.post('/accept-deed', acceptDeed);
 
-// router.post('/login', login);
-
-// router.get("/partners", verifyAdmin, getAllPartners);
-// router.put("/partner/approve/:id", verifyAdmin, approvePartner);
-// router.put("/assign-referral", verifyAdmin, assignReferral);
+router.get("/partner/AllPartners",getAllPartners);
 
 
-// export default router;
+
+router.get("/partner/dashboard/investors",verifyPartner,getMyReferredInvestors);
+
+router.put("/partner/:id",updatePersonalInfo);
+
+router.get("/partner/:id", getSpecificPartners);
+export default router;

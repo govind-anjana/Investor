@@ -1,5 +1,6 @@
 //controller/partnerController.js
 import bcrypt from "bcryptjs";
+import mongoose from "mongoose";
 import Partner from "../models/partnerModel.js";
 import RM from "../models/RmModel.js";
 import { generateReferralCode } from "../utils/referralcode.js";
@@ -155,7 +156,7 @@ export const partnerLogin = async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        message: "Invalid phone or password",
+        message: "Invalid password",
       });
     }
 
@@ -197,7 +198,7 @@ export const partnerLogin = async (req, res) => {
 
 export const getMyReferredInvestors = async (req, res) => {
   try {
-    const partnerId = req.partner.id; // JWT se aaya hua id   
+    const partnerId = req.partner.id; // JWT se aaye hua id   
 
     //  Get logged-in partner
     const partner = await Partner.findById(partnerId);
@@ -227,6 +228,132 @@ export const getMyReferredInvestors = async (req, res) => {
     });
   }
 };
+
+ export const updatePersonalInfo = async (req, res) => {
+  try {
+    const partnerId = req.params.id;
+    //  ObjectId validation
+    if (!mongoose.Types.ObjectId.isValid(partnerId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Partner ID",
+      });
+    }
+    //  Existing partner fetch karo
+    const existingPartner = await Partner.findById(partnerId);
+    if (!existingPartner) {
+      return res.status(404).json({
+        success: false,
+        message: "Partner not found",
+      });
+    }
+
+    const {
+      name,
+      email,
+      dateOfBirth,
+      gender,
+      address1,
+      address2,
+      city,
+      state,
+      pinCode,
+      panNumber,
+      aadharNumber,
+    } = req.body;
+
+    const errors = [];
+
+    //  Email – sirf tab validate karo jab aaye
+    if (email !== undefined) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        errors.push("Invalid email format");
+      }
+    }
+
+    //  DOB
+    if (dateOfBirth !== undefined) {
+      const dob = new Date(dateOfBirth);
+      if (isNaN(dob.getTime()) || dob > new Date()) {
+        errors.push("Invalid date of birth");
+      }
+    }
+
+    //  Gender
+    if (gender !== undefined && !["male", "female", "other"].includes(gender)) {
+      errors.push("Invalid gender");
+    }
+
+    //  Pin code
+    if (pinCode !== undefined && !/^[1-9][0-9]{5}$/.test(pinCode)) {
+      errors.push("Invalid Pin code");
+    }
+
+    //  PAN
+    if (panNumber !== undefined) {
+      if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(panNumber)) {
+        errors.push("Invalid PAN format");
+      }
+    }
+
+    // Aadhaar
+    if (aadharNumber !== undefined) {
+      if (!/^[0-9]{12}$/.test(aadharNumber)) {
+        errors.push("Invalid Aadhaar number");
+      }
+    }
+
+    if (errors.length > 0) {
+      return res.status(422).json({
+        success: false,
+        errors,
+      });
+    }
+
+    //  Update object — fallback to old values
+    const updateData = {
+      name: name ?? existingPartner.name,
+      email: email ?? existingPartner.email,
+      dateOfBirth: dateOfBirth ?? existingPartner.dateOfBirth,
+      gender: gender ?? existingPartner.gender,
+      address1: address1 ?? existingPartner.address1,
+      address2: address2 ?? existingPartner.address2,
+      city: city ?? existingPartner.city,
+      state: state ?? existingPartner.state,
+      pinCode: pinCode ?? existingPartner.pinCode,
+      panNumber: panNumber ?? existingPartner.panNumber,
+      aadharNumber: aadharNumber ?? existingPartner.aadharNumber,
+      completProfile: true,
+    };
+
+    const partner = await Partner.findByIdAndUpdate(
+      partnerId,
+      updateData,
+      { new: true, runValidators: true }
+    ).select("-password");
+
+    res.status(200).json({
+      success: true,
+      message: "Personal information updated successfully",
+      data: partner,
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: "PAN or Aadhaar already exists",
+      });
+    }
+
+    console.error("Update Personal Info Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
  
 // export const verifyOtp = async (req, res) => {
 //   const { phone, otp } = req.body;
