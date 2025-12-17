@@ -38,6 +38,13 @@ const investorSchema = new mongoose.Schema(
         bankName: String,
       },
     },
+        // Digital Deed Signing 
+    digitalDeed: {
+      agree: { type: Boolean, default: false },
+      signature: { type: String }, // base64 / file URL
+      signedAt: { type: Date },
+    },
+
 
     //  Status 
     isActive: { type: Boolean, default: true },

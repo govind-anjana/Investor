@@ -138,6 +138,10 @@ export const invertorLogin = async (req, res) => {
 
 }
 
+export const signDigitalDeed = async (req, res) => {
+  
+}
+
 // export const investorSignup = async (req, res) => {
 //   const investor = await Investor.create({
 //     name: req.body.name,
